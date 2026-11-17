@@ -1,0 +1,31 @@
+{
+  "name": "agent-lego-agent-mcp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MCP server that lets Claude Code drive a LEGO DUPLO train over Bluetooth (node-poweredup)",
+  "type": "module",
+  "main": "src/server.js",
+  "bin": {
+    "duplo-train-mcp": "src/server.js"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "smoke": "node scripts/smoke.js",
+    "scan": "node scripts/smoke.js --scan-only",
+    "check:ble": "node scripts/check-ble.js",
+    "inspector": "npx @modelcontextprotocol/inspector node src/server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mjendza/agent-lego-agent-mcp.git"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "node-poweredup": "^10.1.0",
+    "zod": "^4.6.7"
+  }
+}

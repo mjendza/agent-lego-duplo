@@ -1,0 +1,8 @@
+{
+  "enabledMcpjsonServers": ["duplo-train"],
+  "permissions": {
+    "allow": [
+      "mcp__duplo-train"
+    ]
+  }
+}
