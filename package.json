@@ -13,7 +13,9 @@
     "smoke": "node scripts/smoke.js",
     "scan": "node scripts/smoke.js --scan-only",
     "check:ble": "node scripts/check-ble.js",
-    "inspector": "npx @modelcontextprotocol/inspector node src/server.js"
+    "inspector": "npx @modelcontextprotocol/inspector node src/server.js",
+    "build": "node --check src/server.js && node --check src/train.js && node --check scripts/smoke.js && node --check scripts/check-ble.js",
+    "test": "node --test"
   },
   "engines": {
     "node": ">=20"

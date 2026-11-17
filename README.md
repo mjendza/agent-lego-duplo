@@ -118,6 +118,17 @@ When Claude Code exits, the server stops the motor and disconnects.
 | Need more detail | `.mcp.json` sets `DEBUG=poweredup`. Logs appear in Claude Code's MCP logs (`claude --debug`). For scripts, run `$env:DEBUG="poweredup*"; npm run smoke`. |
 | Debug the MCP server by hand | `npm run inspector` opens the MCP Inspector in a browser. |
 
+## Development and CI
+
+```powershell
+npm run build   # syntax-check all sources
+npm test        # hardware-free tests (MCP server over stdio + config validation)
+```
+
+GitHub Actions (`.github/workflows/ci.yml`) runs `npm ci`, then `build`, then `test`, then `npm audit` on every pull request to `main` and every push to `main`.
+It tests Ubuntu and Windows on Node 20 and 24.
+CI has no train or Bluetooth, so the hardware tests (`npm run smoke`) stay manual.
+
 ## Project layout
 
 ```
