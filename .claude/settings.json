@@ -4,5 +4,33 @@
     "allow": [
       "mcp__duplo-train"
     ]
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "mcp_tool",
+            "server": "duplo-train",
+            "tool": "horn",
+            "input": { "onlyIfConnected": true },
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "mcp_tool",
+            "server": "duplo-train",
+            "tool": "horn",
+            "input": { "onlyIfConnected": true },
+            "timeout": 10
+          }
+        ]
+      }
+    ]
   }
 }

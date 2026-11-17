@@ -75,6 +75,14 @@ Check that the server is running with `/mcp`. `duplo-train` should show as *conn
 | `/train-status` | Connected?, battery %, current power | `status` |
 | `/train-disconnect` | Stop and disconnect | `disconnect` |
 
+### Horn hook: the train honks when Claude needs you
+
+`.claude/settings.json` sets up two hooks, `Stop` (Claude finished its turn) and `Notification` (Claude is waiting for a permission or your input).
+Both call the MCP tool `horn` with `onlyIfConnected: true`. They use the `mcp_tool` hook type, so the call goes through the MCP server that already holds the Bluetooth connection.
+
+- The horn only sounds after the train is connected (`/train-connect` once per session). When the train isn't connected, the hook does nothing and doesn't scan, so Claude never waits on it.
+- To turn the hooks off, delete the `hooks` block from `.claude/settings.json`, or review them in `/hooks`.
+
 ### Natural language
 
 The tools are available to Claude directly, so you can also just ask:

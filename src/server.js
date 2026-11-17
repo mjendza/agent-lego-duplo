@@ -44,8 +44,14 @@ server.registerTool("status", {
 server.registerTool("horn", {
   title: "Sound the horn",
   description: "Play the train horn.",
-  inputSchema: {},
-}, wrap(() => train.horn()));
+  inputSchema: {
+    onlyIfConnected: z.boolean().default(false)
+      .describe("If true, do nothing when the train is not connected (no Bluetooth scan). Used by hooks."),
+  },
+}, wrap(({ onlyIfConnected = false }) => {
+  if (onlyIfConnected && !train.isConnected()) return { played: false, reason: "train not connected" };
+  return train.horn();
+}));
 
 server.registerTool("play_sound", {
   title: "Play train sound",
