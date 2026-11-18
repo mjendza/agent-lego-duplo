@@ -44,3 +44,9 @@ test("slash commands have frontmatter and only reference duplo-train tools", () 
     }
   }
 });
+
+test(".claude/settings.json wires the train status line", () => {
+  const s = readJson(".claude/settings.json");
+  assert.equal(s.statusLine.type, "command");
+  assert.match(s.statusLine.command, /scripts\/statusline\.js/);
+});

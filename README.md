@@ -83,6 +83,31 @@ Both call the MCP tool `horn` with `onlyIfConnected: true`. They use the `mcp_to
 - The horn only sounds after the train is connected (`/train-connect` once per session). When the train isn't connected, the hook does nothing and doesn't scan, so Claude never waits on it.
 - To turn the hooks off, delete the `hooks` block from `.claude/settings.json`, or review them in `/hooks`.
 
+### Status line: train connection at a glance
+
+`.claude/settings.json` also sets a `statusLine` (`node scripts/statusline.js`), which shows for example:
+
+```
+Opus 5.5 | 🚂 connected · 🔋100% · ▶ 40%
+Opus 5.5 | 🚂 link lost, reconnecting…
+Opus 5.5 | 🚂 not connected (/train-connect)
+```
+
+The MCP server writes its state to `%TEMP%\duplo-train-status.json` (override with `DUPLO_STATE_FILE`). The script only reads that file, so it never touches Bluetooth. If the server process is gone, the line shows `server offline`.
+`refreshInterval: 5` re-runs the script every 5 s, so a lost link shows up even while you're idle.
+The command path is relative, so launch `claude` from the repo root. The status line also stays blank until you accept the folder-trust prompt.
+Two Claude Code sessions share one state file, so the most recent server's state wins. That's fine with a single train.
+A project `statusLine` replaces your own status line from `~/.claude/settings.json`. Remove the block if you'd rather keep yours.
+
+### Reliability: timeouts, reconnect, retry
+
+- Every Bluetooth command has a 5 s timeout, so a dead link can't hang Claude.
+- If a command fails, the server drops the stale connection, re-scans for **the same train** (up to 20 s) and retries the command once.
+- If the train drops the link unexpectedly, the server re-scans once in the background. The hub goes back to blinking when it loses the link, so it usually reconnects with no button press.
+- If connecting fails halfway (for example the motor never attaches), the server releases the hub. Otherwise the train would stay "connected" and invisible to the next scan.
+- Auto-reconnect can't wake a train that has **powered off** (after a few idle minutes). Press the green button and run any command.
+- `stop` and the horn hook never reconnect, so they stay fast.
+
 ### Natural language
 
 The tools are available to Claude directly, so you can also just ask:
@@ -139,4 +164,5 @@ src/server.js              MCP stdio server (tools)
 src/train.js               train controller on top of node-poweredup
 scripts/check-ble.js       is Bluetooth LE usable from Node?
 scripts/smoke.js           hardware test without Claude
+scripts/statusline.js      Claude Code status line (reads the server's state file)
 ```

@@ -5,11 +5,15 @@ import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import os from "node:os";
+import { readFileSync, mkdtempSync } from "node:fs";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 let client;
+// Keep the real status-line state file untouched while testing.
+const stateFile = path.join(mkdtempSync(path.join(os.tmpdir(), "duplo-test-")), "state.json");
 
 const call = async (name, args = {}) => {
   const res = await client.callTool({ name, arguments: args });
@@ -25,6 +29,7 @@ before(async () => {
     command: process.execPath,
     args: [path.join(root, "src", "server.js")],
     cwd: root,
+    env: { ...process.env, DUPLO_STATE_FILE: stateFile },
     stderr: "pipe",
   }));
 });
@@ -104,4 +109,11 @@ test("invalid sound is rejected", async () => {
     failed = true;
   }
   assert.ok(failed, "unknown sound should be rejected");
+});
+
+test("server publishes a state file for the status line", () => {
+  const state = JSON.parse(readFileSync(stateFile, "utf8"));
+  assert.equal(state.connected, false);
+  assert.equal(state.phase, "disconnected");
+  assert.equal(typeof state.pid, "number");
 });

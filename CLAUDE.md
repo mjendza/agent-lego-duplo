@@ -11,5 +11,6 @@ This repo controls a LEGO DUPLO train over Bluetooth LE via the `duplo-train` MC
 ## Code rules
 - ESM (`"type": "module"`). Never write to stdout in `src/` — stdout is the MCP JSON-RPC channel; log with `console.error`.
 - `node-poweredup` is imported lazily in `src/train.js` so the server starts without Bluetooth.
+- `src/train.js` mirrors connection state to `%TEMP%/duplo-train-status.json` (`DUPLO_STATE_FILE` overrides; tests set it) for `scripts/statusline.js`. Wrap BLE calls in `run()` so they get timeout + reconnect/retry.
 - Standalone scripts must end with `process.exit()` (noble keeps the event loop alive).
 - Hardware test: `npm run smoke`. BLE check: `npm run check:ble`.

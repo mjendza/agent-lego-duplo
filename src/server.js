@@ -50,7 +50,8 @@ server.registerTool("horn", {
   },
 }, wrap(({ onlyIfConnected = false }) => {
   if (onlyIfConnected && !train.isConnected()) return { played: false, reason: "train not connected" };
-  return train.horn();
+  // Hook path: never reconnect/retry, so Claude never waits on Bluetooth.
+  return train.horn({ retry: !onlyIfConnected });
 }));
 
 server.registerTool("play_sound", {
@@ -99,6 +100,7 @@ async function shutdown(reason) {
   shuttingDown = true;
   console.error(`[duplo-train] shutting down (${reason})`);
   try { await Promise.race([train.disconnect(), new Promise((r) => setTimeout(r, 3000))]); } catch { /* ignore */ }
+  train.publishState({ phase: "offline", connected: false });
   process.exit(0);
 }
 process.on("SIGINT", () => shutdown("SIGINT"));
@@ -107,4 +109,5 @@ process.stdin.on("end", () => shutdown("stdin closed"));
 process.stdin.on("close", () => shutdown("stdin closed"));
 
 await server.connect(new StdioServerTransport());
+train.publishState(); // status line: server up, train not connected yet
 console.error("[duplo-train] MCP server ready on stdio");

@@ -5,6 +5,12 @@
       "mcp__duplo-train"
     ]
   },
+  "statusLine": {
+    "type": "command",
+    "command": "node scripts/statusline.js",
+    "padding": 0,
+    "refreshInterval": 5
+  },
   "hooks": {
     "Stop": [
       {
