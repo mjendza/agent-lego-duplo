@@ -83,6 +83,14 @@ Both call the MCP tool `horn` with `onlyIfConnected: true`. They use the `mcp_to
 - The horn only sounds after the train is connected (`/train-connect` once per session). When the train isn't connected, the hook does nothing and doesn't scan, so Claude never waits on it.
 - To turn the hooks off, delete the `hooks` block from `.claude/settings.json`, or review them in `/hooks`.
 
+### Auto-connect when Claude Code starts
+
+`.mcp.json` sets `DUPLO_AUTOCONNECT=60`, so the MCP server starts scanning for the train as soon as Claude Code launches. You don't need to run `/train-connect`. Press the green button within 60 s and the status line goes from `scanning… press the green button` to `connected`.
+
+- The scan runs in the background, so Claude Code starts right away either way.
+- If no train is found in time, the status line says so. Press the button and run `/train-connect` or any train command.
+- Set the value to a number of seconds (5–120), `1`/`true` for 60 s, or `0`/remove it to turn auto-connect off.
+
 ### Status line: train connection at a glance
 
 `.claude/settings.json` also sets a `statusLine` (`node scripts/statusline.js`), which shows for example:

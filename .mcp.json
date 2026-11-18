@@ -5,7 +5,8 @@
       "command": "node",
       "args": ["src/server.js"],
       "env": {
-        "DEBUG": "poweredup"
+        "DEBUG": "poweredup",
+        "DUPLO_AUTOCONNECT": "60"
       }
     }
   }

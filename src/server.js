@@ -111,3 +111,16 @@ process.stdin.on("close", () => shutdown("stdin closed"));
 await server.connect(new StdioServerTransport());
 train.publishState(); // status line: server up, train not connected yet
 console.error("[duplo-train] MCP server ready on stdio");
+
+// Optional: connect to the train as soon as the server starts (i.e. when Claude
+// Code starts). DUPLO_AUTOCONNECT = "1"/"true" (scan 60 s) or a number of seconds.
+// Runs in the background so it never blocks MCP startup; progress shows in the status line.
+const auto = String(process.env.DUPLO_AUTOCONNECT ?? "").trim().toLowerCase();
+if (auto && !["0", "false", "no", "off"].includes(auto)) {
+  const secs = Number(auto);
+  const timeoutSeconds = Number.isFinite(secs) && secs > 0 ? Math.min(120, Math.max(5, secs)) : 60;
+  console.error(`[duplo-train] auto-connect: scanning up to ${timeoutSeconds} s`);
+  train.connect({ timeoutMs: timeoutSeconds * 1000 })
+    .then((s) => console.error(`[duplo-train] auto-connect ok (battery ${s.batteryLevel}%)`))
+    .catch((e) => console.error(`[duplo-train] auto-connect failed: ${e.message}`));
+}
