@@ -1,5 +1,7 @@
 # agent-lego-duplo-train
 
+![Claude Code](docs/claude-code.png)
+
 Drive a **LEGO DUPLO train** (Train Base hub from the DUPLO Push & Go / Steam / Cargo sets, e.g. 10874, 10875, 10427, 10428) from **Claude Code**.
 It works through an MCP server built on [node-poweredup](https://github.com/nathankellenicky/node-poweredup) over Bluetooth Low Energy.
 
@@ -8,14 +10,14 @@ Claude Code ──stdio/MCP──> src/server.js ──> src/train.js ──node
 ```
 
 > **Why it's built this way:** see [ADR 0001](docs/adr/0001-claude-code-drives-duplo-train-via-mcp.md).
-> **Diagram:** [`docs/architecture.excalidraw`](docs/architecture.excalidraw). Open it at <https://excalidraw.com> or with the VS Code Excalidraw extension.
+> **Diagram:** [`docs/big-picture.excalidraw`](docs/big-picture.excalidraw). Open it at <https://excalidraw.com> or with the VS Code Excalidraw extension.
 
 ## Architecture
 
-<!-- TODO: export docs/architecture.excalidraw as SVG (Excalidraw: Menu → Export image → SVG, "Embed scene" on) and save it as docs/architecture.svg -->
-![Architecture: Claude Code, the duplo-train MCP server, the DUPLO train over BLE, and the status line state file](docs/architecture.png)
+<!-- TODO: export docs/big-picture.excalidraw as SVG (Excalidraw: Menu → Export image → SVG, "Embed scene" on) and save it as docs/big-picture.svg -->
+![Architecture: Claude Code, the duplo-train MCP server, the DUPLO train over BLE, and the status line state file](docs/big-picture.png)
 
-*Source: [`docs/architecture.excalidraw`](docs/architecture.excalidraw). Edit it there and re-export the SVG.*
+*Source: [`docs/big-picture.excalidraw`](docs/big-picture.excalidraw). Edit it there and re-export the SVG.*
 
 The design rests on these choices:
 
@@ -50,8 +52,8 @@ The design rests on these choices:
 ## 2. Install
 
 ```powershell
-git clone https://github.com/mjendza/agent-lego-agent-mcp.git
-cd agent-lego-agent-mcp
+git clone https://github.com/mjendza/agent-lego-duplo.git
+cd agent-lego-duplo
 npm install
 npm run check:ble      # should print: Bluetooth state: poweredOn / OK
 ```
@@ -81,7 +83,7 @@ npm run smoke    # connect, horn, green light, drive 2 s, brake, disconnect
 ## 4. Use from Claude Code
 
 ```powershell
-cd agent-lego-agent-mcp
+cd agent-lego-duplo
 claude
 ```
 
@@ -104,6 +106,24 @@ Check that the server is running with `/mcp`. `duplo-train` should show as *conn
 | `/train-stop [coast]` | Brake (default) or coast to a stop | `stop` |
 | `/train-status` | Connected?, battery %, current power | `status` |
 | `/train-disconnect` | Stop and disconnect | `disconnect` |
+| `/test-light [test command]` | Runs the unit tests (default `npm test`): light yellow while running, then green + departure sound or red + brake sound | `set_light`, `play_sound` |
+| `/ci-light` | Watches GitHub Actions for the current PR (`gh pr checks --watch`) or for the current commit on the branch (`gh run watch`): yellow, then green + horn or red + brake | `set_light`, `horn`, `play_sound` |
+
+`/test-light` and `/ci-light` also pre-approve a few scoped `Bash(...)` commands (`npm test`, `git`, `gh`). `/ci-light` needs the [GitHub CLI](https://cli.github.com/) logged in (`gh auth status`). A different test command (for example `/test-light dotnet test`) asks for permission once.
+
+### Use the train from your other repos
+
+The config above is project-scoped, so it only works while Claude Code runs in this folder. To get the horn, the status line and `/test-light` / `/ci-light` in any repo, register it for your user (use the absolute path of your clone):
+
+```powershell
+claude mcp add --transport stdio --scope user --env DUPLO_AUTOCONNECT=60 duplo-train -- node C:\dev\agent-lego-duplo\src\server.js
+New-Item -ItemType Directory -Force $HOME\.claude\commands | Out-Null
+Copy-Item .claude\commands\*.md $HOME\.claude\commands\
+```
+
+Then copy the `permissions`, `hooks` and `statusLine` blocks from `.claude/settings.json` into `~/.claude/settings.json`, with the status line path made absolute (`node C:\dev\agent-lego-duplo\scripts\statusline.js`). Adjust the `Bash(...)` entries in `test-light.md` to your test runner.
+
+The hub accepts one Bluetooth connection, so only one Claude Code session at a time can own the train. A second session's server can't reach it.
 
 ### Horn hook: the train honks when Claude needs you
 
@@ -197,7 +217,7 @@ CI has no train or Bluetooth, so the hardware tests (`npm run smoke`) stay manua
 ```
 .mcp.json                  MCP server registration for Claude Code
 .claude/settings.json      approves the server + allows its tools
-.claude/commands/          /train-connect /horn /train-start /train-stop /train-status /train-disconnect
+.claude/commands/          /train-connect /horn /train-start /train-stop /train-status /train-disconnect /test-light /ci-light
 src/server.js              MCP stdio server (tools)
 src/train.js               train controller on top of node-poweredup
 scripts/check-ble.js       is Bluetooth LE usable from Node?

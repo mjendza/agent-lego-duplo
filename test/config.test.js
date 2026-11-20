@@ -29,10 +29,12 @@ test(".claude/settings.json approves the server, allows its tools and wires horn
   }
 });
 
-test("slash commands have frontmatter and only reference duplo-train tools", () => {
+test("slash commands have frontmatter and only reference duplo-train tools or scoped Bash", () => {
   const dir = path.join(root, ".claude", "commands");
   const files = readdirSync(dir).filter((f) => f.endsWith(".md"));
-  for (const expected of ["horn.md", "train-connect.md", "train-start.md", "train-stop.md"]) {
+  for (const expected of [
+    "horn.md", "train-connect.md", "train-start.md", "train-stop.md", "test-light.md", "ci-light.md",
+  ]) {
     assert.ok(files.includes(expected), `${expected} missing`);
   }
   for (const f of files) {
@@ -40,7 +42,8 @@ test("slash commands have frontmatter and only reference duplo-train tools", () 
     assert.match(text, /^---\r?\n[\s\S]*?description:/, `${f}: missing description frontmatter`);
     const tools = text.match(/^allowed-tools:(.*)$/m)?.[1] ?? "";
     for (const t of tools.split(",").map((x) => x.trim()).filter(Boolean)) {
-      assert.match(t, /^mcp__duplo-train__\w+$/, `${f}: unexpected tool ${t}`);
+      // Bash must be scoped to a command prefix; a bare "Bash" would allow anything.
+      assert.match(t, /^(mcp__duplo-train__\w+|Bash\((npm|git|gh) [^()]+\))$/, `${f}: unexpected tool ${t}`);
     }
   }
 });

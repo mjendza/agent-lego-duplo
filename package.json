@@ -22,7 +22,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mjendza/agent-lego-agent-mcp.git"
+    "url": "git+https://github.com/mjendza/agent-lego-duplo.git"
   },
   "license": "ISC",
   "dependencies": {
