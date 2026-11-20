@@ -1,5 +1,7 @@
 # agent-lego-duplo-train
 
+![Claude Code](docs/claude-code.png)
+
 Drive a **LEGO DUPLO train** (Train Base hub from the DUPLO Push & Go / Steam / Cargo sets, e.g. 10874, 10875, 10427, 10428) from **Claude Code**.
 It works through an MCP server built on [node-poweredup](https://github.com/nathankellenicky/node-poweredup) over Bluetooth Low Energy.
 
@@ -8,14 +10,14 @@ Claude Code ──stdio/MCP──> src/server.js ──> src/train.js ──node
 ```
 
 > **Why it's built this way:** see [ADR 0001](docs/adr/0001-claude-code-drives-duplo-train-via-mcp.md).
-> **Diagram:** [`docs/architecture.excalidraw`](docs/architecture.excalidraw). Open it at <https://excalidraw.com> or with the VS Code Excalidraw extension.
+> **Diagram:** [`docs/big-picture.excalidraw`](docs/big-picture.excalidraw). Open it at <https://excalidraw.com> or with the VS Code Excalidraw extension.
 
 ## Architecture
 
-<!-- TODO: export docs/architecture.excalidraw as SVG (Excalidraw: Menu → Export image → SVG, "Embed scene" on) and save it as docs/architecture.svg -->
-![Architecture: Claude Code, the duplo-train MCP server, the DUPLO train over BLE, and the status line state file](docs/architecture.png)
+<!-- TODO: export docs/big-picture.excalidraw as SVG (Excalidraw: Menu → Export image → SVG, "Embed scene" on) and save it as docs/big-picture.svg -->
+![Architecture: Claude Code, the duplo-train MCP server, the DUPLO train over BLE, and the status line state file](docs/big-picture.png)
 
-*Source: [`docs/architecture.excalidraw`](docs/architecture.excalidraw). Edit it there and re-export the SVG.*
+*Source: [`docs/big-picture.excalidraw`](docs/big-picture.excalidraw). Edit it there and re-export the SVG.*
 
 The design rests on these choices:
 

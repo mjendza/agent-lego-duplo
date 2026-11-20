@@ -2,9 +2,9 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-19
-- **Diagram:** [`docs/architecture.excalidraw`](../architecture.excalidraw) (open at <https://excalidraw.com> or with the VS Code Excalidraw extension)
+- **Diagram:** [`docs/big-picture.excalidraw`](../big-picture.excalidraw) (open at <https://excalidraw.com> or with the VS Code Excalidraw extension)
 
-![Architecture](../architecture.svg)
+![Architecture](../big-picture.png)
 
 ## Summary (blog intro)
 
