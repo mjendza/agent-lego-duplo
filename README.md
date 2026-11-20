@@ -7,6 +7,36 @@ It works through an MCP server built on [node-poweredup](https://github.com/nath
 Claude Code ──stdio/MCP──> src/server.js ──> src/train.js ──node-poweredup──BLE──> DUPLO train
 ```
 
+> **Why it's built this way:** see [ADR 0001](docs/adr/0001-claude-code-drives-duplo-train-via-mcp.md).
+> **Diagram:** [`docs/architecture.excalidraw`](docs/architecture.excalidraw). Open it at <https://excalidraw.com> or with the VS Code Excalidraw extension.
+
+## Architecture
+
+<!-- TODO: export docs/architecture.excalidraw as SVG (Excalidraw: Menu → Export image → SVG, "Embed scene" on) and save it as docs/architecture.svg -->
+![Architecture: Claude Code, the duplo-train MCP server, the DUPLO train over BLE, and the status line state file](docs/architecture.png)
+
+*Source: [`docs/architecture.excalidraw`](docs/architecture.excalidraw). Edit it there and re-export the SVG.*
+
+The design rests on these choices:
+
+1. **One process owns the Bluetooth link.** Claude Code spawns `src/server.js` from `.mcp.json`, and it lives as long as the session. The DUPLO hub accepts only **one** BLE connection, so the model, the slash commands and the hooks all go through this one process. None of them connect on their own.
+2. **The MCP layer is thin and the controller holds the logic.**
+   - `src/server.js` only declares the tools (zod schemas) and turns results or errors into MCP responses.
+   - `src/train.js` holds the connection state machine (`disconnected → scanning → connected → reconnecting / error`).
+   - Every BLE command goes through `run()`, which adds a timeout, drops a dead link, re-scans for the same train by UUID and retries the command once.
+3. **stdout is sacred.** Stdio carries JSON-RPC, so the server sends `console.log` to stderr before anything else loads.
+4. **Bluetooth loads lazily.** `node-poweredup` is imported on first use. The server starts and passes its tests on machines with no Bluetooth (CI).
+5. **Hooks reuse the live connection.** The `Stop` and `Notification` hooks use the `mcp_tool` hook type to call `horn` inside the already-connected server. With `onlyIfConnected: true`, a disconnected train costs nothing: no scan, no wait.
+6. **The status line goes through a file, not Bluetooth.** The server writes its state to `%TEMP%/duplo-train-status.json` (atomic write; `DUPLO_STATE_FILE` overrides the path). `scripts/statusline.js` reads it every 5 s, checks that the server pid is alive and prints one line. It can't hang and never competes for the hub.
+7. **The lifecycle is tied to the session.** When Claude Code exits (stdin closes, SIGINT or SIGTERM), the server stops the motor, disconnects and marks the state `offline`.
+
+### What happens when you type `/horn`
+
+1. Claude Code expands `.claude/commands/horn.md`, and the model calls the MCP tool `mcp__duplo-train__horn`.
+2. `src/server.js` calls `train.horn()`. `run()` connects first if needed (scan, attach motor, speaker and LED, then a 500 ms settle delay).
+3. `node-poweredup` writes the "play sound" command over BLE, with a 5 s timeout. On failure it reconnects and retries once.
+4. `src/train.js` publishes the new state to the JSON file, and the status line shows it on its next refresh.
+
 ## 1. Requirements
 
 | | |
@@ -129,7 +159,7 @@ The tools are available to Claude directly, so you can also just ask:
 | `connect` | `timeoutSeconds` (5–120, default 30), `name` (optional hub name) |
 | `disconnect` | – |
 | `status` | – |
-| `horn` | – |
+| `horn` | `onlyIfConnected` (default `false`; hooks set `true` to skip scanning) |
 | `play_sound` | `sound`: `HORN`, `BRAKE`, `STATION_DEPARTURE`, `WATER_REFILL`, `STEAM` |
 | `start` | `speed` 0–100, `direction` `forward`/`backward` |
 | `drive` | `speed`, `direction`, `seconds` (≤ 60), then brakes |
@@ -173,4 +203,6 @@ src/train.js               train controller on top of node-poweredup
 scripts/check-ble.js       is Bluetooth LE usable from Node?
 scripts/smoke.js           hardware test without Claude
 scripts/statusline.js      Claude Code status line (reads the server's state file)
+docs/adr/                  architecture decision records
+docs/architecture.excalidraw  architecture diagram
 ```
