@@ -1,4 +1,4 @@
-# agent-lego-agent-mcp
+# agent-lego-duplo-train
 
 Drive a **LEGO DUPLO train** (Train Base hub from the DUPLO Push & Go / Steam / Cargo sets, e.g. 10874, 10875, 10427, 10428) from **Claude Code**.
 It works through an MCP server built on [node-poweredup](https://github.com/nathankellenicky/node-poweredup) over Bluetooth Low Energy.
