@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "duplo-train": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["src/server.js"],
+      "env": {
+        "DEBUG": "poweredup",
+        "DUPLO_AUTOCONNECT": "60"
+      }
+    }
+  }
+}

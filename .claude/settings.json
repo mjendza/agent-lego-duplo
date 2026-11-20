@@ -1,0 +1,42 @@
+{
+  "enabledMcpjsonServers": ["duplo-train"],
+  "permissions": {
+    "allow": [
+      "mcp__duplo-train"
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "node scripts/statusline.js",
+    "padding": 0,
+    "refreshInterval": 5
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "mcp_tool",
+            "server": "duplo-train",
+            "tool": "horn",
+            "input": { "onlyIfConnected": true },
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "mcp_tool",
+            "server": "duplo-train",
+            "tool": "horn",
+            "input": { "onlyIfConnected": true },
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
